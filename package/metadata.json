@@ -6,13 +6,13 @@
                 "Name": "borislisandro"
             }
         ],
-        "Description": "Slow-drifting translucent sheets rendered as animated ASCII, on the GPU",
+        "Description": "Animated ASCII wallpaper: slow, flowing patterns drawn in glyphs on the GPU",
         "Icon": "preferences-desktop-wallpaper",
-        "Id": "io.github.borislisandro.asciidrift",
+        "Id": "io.github.borislisandro.glyphtide",
         "License": "MIT",
-        "Name": "ASCII Drift",
+        "Name": "Glyphtide",
         "Version": "1.0.0",
-        "Website": "https://github.com/borislisandro/ascii-drift"
+        "Website": "https://github.com/borislisandro/glyphtide"
     },
     "X-Plasma-API-Minimum-Version": "6.0"
 }

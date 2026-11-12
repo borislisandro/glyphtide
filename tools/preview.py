@@ -31,7 +31,7 @@ def main() -> int:
 
     app = QGuiApplication(sys.argv[:1])
     view = QQuickView()
-    view.setTitle("ascii-drift preview")
+    view.setTitle("glyphtide preview")
     view.setResizeMode(QQuickView.ResizeMode.SizeRootObjectToView)
 
     props = {"seed": args.seed}

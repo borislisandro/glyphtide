@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Talks to the running Plasma shell on behalf of the ASCII Drift widget.
+# Talks to the running Plasma shell on behalf of the Glyphtide widget.
 #   ctl.sh get              print the wallpaper's current settings as JSON
 #   ctl.sh set KEY VALUE    change one setting on every screen using the wallpaper
-#   ctl.sh enable           make ASCII Drift the wallpaper on every screen
+#   ctl.sh enable           make Glyphtide the wallpaper on every screen
 set -euo pipefail
-id=io.github.borislisandro.asciidrift
+id=io.github.borislisandro.glyphtide
 qdbus=$(command -v qdbus6 || command -v qdbus-qt6 || command -v qdbus)
 run() { "$qdbus" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$1"; }
 

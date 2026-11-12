@@ -1,5 +1,5 @@
 /*
-    ascii-drift — the animation itself. Pure QtQuick, no Plasma imports, so the
+    glyphtide — the animation itself. Pure QtQuick, no Plasma imports, so the
     same file runs inside the wallpaper and inside tools/preview.py.
 
     One ShaderEffect draws everything:

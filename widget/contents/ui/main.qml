@@ -1,5 +1,5 @@
 /*
-    ascii-drift — panel / system tray widget.
+    glyphtide — panel / system tray widget.
     A small remote control for the wallpaper: it reads the wallpaper's settings
     when opened and writes each change straight back, on every screen.
 */
@@ -15,9 +15,9 @@ import org.kde.plasma.plasma5support as P5Support
 PlasmoidItem {
     id: root
 
-    Plasmoid.icon: Qt.resolvedUrl("../icons/asciidrift.svg").toString().replace("file://", "")
+    Plasmoid.icon: Qt.resolvedUrl("../icons/glyphtide.svg").toString().replace("file://", "")
     Plasmoid.status: PlasmaCore.Types.ActiveStatus // always shown in the tray, never tucked into the overflow
-    toolTipMainText: "ASCII Drift"
+    toolTipMainText: "Glyphtide"
     toolTipSubText: !state.active ? "Wallpaper not in use"
                   : state.Pattern < 0 ? "Cycling patterns every " + state.CycleMinutes + " min"
                   : patterns[state.Pattern + 1]
@@ -38,7 +38,7 @@ PlasmoidItem {
                     root.loading = true;
                     root.state = JSON.parse(data["stdout"]);
                 } catch (e) {
-                    console.warn("ascii-drift widget: could not read settings:", data["stdout"], data["stderr"]);
+                    console.warn("glyphtide widget: could not read settings:", data["stdout"], data["stderr"]);
                 } finally {
                     root.loading = false;
                 }
@@ -70,7 +70,7 @@ PlasmoidItem {
 
         Kirigami.Heading {
             level: 3
-            text: "ASCII Drift"
+            text: "Glyphtide"
             Layout.margins: Kirigami.Units.smallSpacing
         }
 
@@ -80,7 +80,7 @@ PlasmoidItem {
             PlasmaComponents.Label {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                text: "ASCII Drift is not the current wallpaper."
+                text: "Glyphtide is not the current wallpaper."
             }
             PlasmaComponents.Button {
                 text: "Use it on all screens"

@@ -1,5 +1,5 @@
 /*
-    ascii-drift — Plasma 6 wallpaper wrapper.
+    glyphtide — Plasma 6 wallpaper wrapper.
     Feeds the user's settings into AsciiScene and pauses it while a
     maximized/fullscreen window hides this screen's desktop.
 */

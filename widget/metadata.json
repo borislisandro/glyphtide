@@ -7,13 +7,13 @@
             }
         ],
         "Category": "Appearance",
-        "Description": "Quick controls for the ASCII Drift wallpaper",
+        "Description": "Quick controls for the Glyphtide wallpaper",
         "Icon": "preferences-desktop-wallpaper",
-        "Id": "io.github.borislisandro.asciidrift.widget",
+        "Id": "io.github.borislisandro.glyphtide.widget",
         "License": "MIT",
-        "Name": "ASCII Drift",
+        "Name": "Glyphtide",
         "Version": "1.0.0",
-        "Website": "https://github.com/borislisandro/ascii-drift"
+        "Website": "https://github.com/borislisandro/glyphtide"
     },
     "X-Plasma-API-Minimum-Version": "6.0",
     "X-Plasma-NotificationAreaCategory": "ApplicationStatus"

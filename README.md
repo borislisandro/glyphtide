@@ -1,122 +1,187 @@
-# ascii-drift
+# Glyphtide
 
-An animated ASCII wallpaper for KDE Plasma 6, drawn entirely in monospace
-glyphs in a crimson / orange / magenta palette on black. Four patterns, which
-it can cycle through by slowly morphing one into the next:
+**An animated ASCII wallpaper for KDE Plasma 6.** Slow, flowing shapes drawn
+entirely out of monospace characters — dense glyphs like `@%#` where a shape
+is brightest, thinning to `:` and `.` where it fades.
 
-| | |
+![Glyphtide's four patterns](docs/patterns.png)
+
+- **Four patterns** that it cycles through, morphing slowly from one to the next
+- **Per-monitor**, at your display's refresh rate
+- **Light**: one GPU draw call, pauses itself under maximized windows
+- **A tray icon** (`#`) with the everyday controls
+- Keeps desktop icons, widgets and right-click menus working as usual
+
+The default palette is crimson / orange / magenta on near-black, with
+JetBrains Mono. All of it is configurable.
+
+## What it is (and isn't)
+
+Glyphtide is not a program that runs in the background. It is two small
+add-ons that the Plasma desktop shell loads itself:
+
+| Add-on | What it does |
 |---|---|
-| **Drift** — translucent sheets sliding over each other | **Dunes** — layered ridgelines rolling sideways |
-| **Ripples** — rings spreading from wandering sources | **Aurora** — hanging curtains of light that sway |
+| **Wallpaper plugin** | Draws the animation. Appears in the wallpaper type list next to *Image* and *Plain Color*. |
+| **Tray widget** | The `#` icon in the system tray: a quick settings panel for the wallpaper. |
 
-![patterns](docs/patterns.png)
-
-It is not a separate program. It comes as two small Plasma add-ons that the
-desktop shell itself loads:
-
-- a **wallpaper plugin** — shows up in *Desktop and Wallpaper* settings, keeps
-  desktop icons and widgets working, and runs independently on each monitor;
-- a **system tray widget** (the `#` icon) — a quick settings panel for the
-  wallpaper: pattern, cycle interval, speed, glyph size, shape size, pausing.
+Nothing needs to be started at login. Once chosen, Plasma remembers it like
+any other wallpaper.
 
 ## Install
 
+Requirements: KDE Plasma 6 and a monospace font (JetBrains Mono by default).
+
 ```sh
-make install   # install (or upgrade) the wallpaper and the tray widget
-make apply     # set it as the wallpaper on every screen
+git clone https://github.com/borislisandro/glyphtide.git
+cd glyphtide
+make install   # installs the wallpaper and the tray widget, adds the tray icon
+make apply     # sets Glyphtide as the wallpaper on every screen
 ```
 
-Or pick **ASCII Drift** by hand under *Right click desktop → Desktop and
-Wallpaper → Wallpaper type*. To go back, choose *Image* there again.
+No compiler or Qt development packages are needed; the compiled shaders are
+included in the repo.
 
-Requirements: Plasma 6 and a monospace font (default: JetBrains Mono). The
-compiled shaders are committed, so no build tools are needed to install.
+You can also pick it by hand: *right-click the desktop → Desktop and
+Wallpaper → Wallpaper type → Glyphtide*.
 
-After upgrading an already-running version, run `make restart` (restarts
-plasmashell) to load the new code.
+### Going back / removing it
 
-## Settings
+- **Use a normal wallpaper again:** choose *Image* in the same wallpaper type list.
+- **Remove everything:** `make uninstall`.
 
-The tray widget covers the everyday ones; everything is in *Right click
-desktop → Desktop and Wallpaper*.
+## Using it
 
-| Setting | Default | |
+Click the `#` icon in the system tray:
+
+| Control | What it changes |
+|---|---|
+| Pattern | *Cycle through all*, or pin one pattern |
+| Change every | How long each pattern stays when cycling |
+| Speed | Animation speed; 0 freezes it |
+| Glyph size | Character size in pixels; smaller means a finer grid |
+| Shape size | Scale of the shapes themselves |
+| Pause under maximized windows | Stop animating when the desktop is hidden anyway |
+
+Changes apply immediately on every screen.
+
+Colours, the glyph set, the font, glow and the frame-rate cap live in the full
+settings page: *right-click the desktop → Desktop and Wallpaper*.
+
+## Patterns
+
+| Pattern | Looks like |
+|---|---|
+| **Drift** | Translucent sheets sliding over each other, each with a bright rim and faint contour lines inside |
+| **Dunes** | Layered ridgelines rolling sideways, like hills receding into the distance |
+| **Ripples** | Rings spreading from three slowly wandering points |
+| **Aurora** | Curtains of light hanging from the top of the screen, swaying |
+
+When cycling, the pattern is chosen from the clock, so all monitors change
+together, and each change is a six-second morph rather than a cut.
+
+## All settings
+
+| Setting | Default | Notes |
 |---|---|---|
-| Pattern | cycle | or pin Drift, Dunes, Ripples or Aurora |
-| Change every | 10 min | how long each pattern stays when cycling |
-| Glyphs | `` .:-=+*#%@`` | the ramp, from emptiest to densest |
-| Font / glyph size | JetBrains Mono, 16 px | smaller = finer grid |
-| Speed | 100 % | 0 freezes it |
+| Pattern | Cycle | or Drift, Dunes, Ripples, Aurora |
+| Change every | 10 min | only when cycling |
+| Glyphs | `` .:-=+*#%@`` | the ramp, from emptiest to densest; any characters work |
+| Font | JetBrains Mono | any installed font; monospace looks best |
+| Glyph size | 16 px | |
+| Speed | 100 % | |
 | Shape size | 100 % | |
 | Glow | 12 % | soft colour behind the glyphs |
-| Frame rate cap | 0 | 0 follows the display refresh rate; a cap skips whole frames |
-| Pause when covered | on | stops animating under a maximized/fullscreen window, resumes the moment it moves |
-| Colours | CrimsonDark palette | background + four sheet colours |
+| Frame rate cap | 0 | 0 follows the display; a cap skips whole frames so pacing stays even |
+| Pause when covered | on | resumes the moment the window is moved or un-maximized |
+| Colours | crimson theme | background plus four shape colours |
 
-## How it works
+## What it costs
 
-One draw call, and only its uniforms change from frame to frame:
+Measured on a 12-thread desktop with an RTX 2060 Super and two monitors
+(2560×1440 at 180 Hz, 1080×1920 at 165 Hz), both animating at full refresh
+rate, compared with a static image wallpaper in the same session. The desktop
+was in normal use, so treat these as approximate.
 
-1. `field.vert` — the mesh has one vertex per character-cell corner (about
-   250 × 70 on a 1440p screen), and the vertex shader computes the field
-   there: four domain-warped noise "sheets", each with a dense rim of constant
-   on-screen width, a stippled interior and fading contour lines. So the
-   expensive maths runs a few thousand times per frame, not millions.
-2. `glyph.frag` — each pixel extrapolates the interpolated field to the centre
-   of its own cell, so the whole cell agrees on one colour and density, then
-   draws the matching glyph from an atlas that QML renders once from the
-   chosen font. Adjacent glyphs in the ramp are cross-faded so density changes
-   morph instead of popping.
-
-The animation clock follows the display's frame clock, so it runs at the
-monitor's refresh rate with even pacing.
-
-## Cost
-
-Measured on a 12-thread desktop with an RTX 2060 Super, two monitors
-(2560×1440 @ 180 Hz and 1080×1920 @ 165 Hz) both animating at display rate,
-against the same session with a static image wallpaper. Readings are noisy
-because the rest of the desktop was in use.
-
-| | static image | ascii-drift |
+| | Static image | Glyphtide |
 |---|---|---|
 | plasmashell CPU (share of one core) | 8–11 % | 12–16 % |
-| GPU load (whole system) | 28–29 % | 31–32 % |
+| GPU load, whole system | 28–29 % | 31–32 % |
 | plasmashell video memory | 119–123 MiB | 104–108 MiB |
 | plasmashell RAM growth | ~1.5 MiB/min | ~2.2 MiB/min |
 
-While a maximized or fullscreen window covers a screen the animation is
-paused and costs nothing.
+- While a maximized or fullscreen window covers a screen, that screen's
+  animation is paused and its CPU cost returns to the static-image level.
+- **Known limitation:** on this NVIDIA + Wayland setup, plasmashell's memory
+  grows slightly faster while the wallpaper is visibly animating (about
+  0.7 MiB/min more than with a static image, measured over three minutes).
+  Whether it levels off over hours has not been measured. Restarting
+  plasmashell (`make restart`) or logging out resets it.
 
-An earlier two-pass design (field rendered to a small texture every frame)
-made plasmashell grow by 4–5 MiB/min on this NVIDIA/Wayland setup; the
-single-pass design exists to avoid that.
+## How it works
+
+Everything is one draw call whose inputs are a handful of numbers that change
+each frame.
+
+1. **The field** (`field.vert`). The screen is covered by a mesh with one
+   vertex at every character-cell corner — roughly 250 × 70 on a 1440p
+   monitor. The vertex shader evaluates the current pattern there and outputs
+   a colour and a density. The expensive maths therefore runs a few thousand
+   times per frame instead of once per pixel.
+2. **The glyphs** (`glyph.frag`). Each pixel works out which cell it is in,
+   reconstructs that cell's single colour and density, and draws the matching
+   character from a small texture holding the glyph ramp (rendered once from
+   the chosen font). Neighbouring characters in the ramp are cross-faded, so a
+   cell morphs from `+` to `*` instead of snapping.
+3. **Switching patterns.** The shader always knows two patterns and a mix
+   factor; a pattern change animates that factor from 0 to 1.
+
+The tray widget holds no state of its own. It reads and writes the
+wallpaper's configuration through Plasma's scripting interface
+(`widget/contents/tools/ctl.sh`).
+
+## Project layout
 
 ```
-package/                     the Plasma wallpaper package
-  contents/ui/AsciiScene.qml   the animation (pure QtQuick)
-  contents/ui/main.qml         Plasma wrapper + pause logic
-  contents/ui/config.qml       settings page
-widget/                      the system tray widget
-  contents/ui/main.qml         the popup
-  contents/tools/ctl.sh        reads/writes the wallpaper settings via Plasma scripting
-  contents/shaders/            shader sources (+ compiled .qsb)
-tools/preview.py             run the scene in a window (needs PySide6)
-tools/apply.sh               set as wallpaper on all screens
-tools/add-to-tray.sh         put the widget in the system tray
+package/                       wallpaper plugin
+  contents/ui/AsciiScene.qml     the animation (plain QtQuick, no Plasma imports)
+  contents/ui/main.qml           Plasma wrapper and pause-when-covered logic
+  contents/ui/config.qml         full settings page
+  contents/config/main.xml       setting names and defaults
+  contents/shaders/              field.vert, glyph.frag and their compiled .qsb
+widget/                        tray widget
+  contents/ui/main.qml           the popup
+  contents/tools/ctl.sh          get / set wallpaper settings, enable the wallpaper
+tools/
+  preview.py                     run the animation in a normal window
+  apply.sh                       set as wallpaper on every screen
+  add-to-tray.sh                 put the widget in the system tray
 ```
 
-## Hacking
+## Development
 
 ```sh
-make preview                                   # live window
-tools/preview.py --size 1080x1920 --seed 2.5   # portrait, other part of the field
-tools/preview.py --shot out.png --time 40      # render one frame
+make preview                                    # live window, no wallpaper involved
 tools/preview.py --set pattern=3                # 0 Drift, 1 Dunes, 2 Ripples, 3 Aurora
+tools/preview.py --size 1080x1920 --seed 2.5    # portrait, another part of the field
+tools/preview.py --shot out.png --time 40       # render one frame to a file
 ```
 
-Editing a shader needs `qsb` (Fedora: `qt6-qtshadertools`); `make` rebuilds
-the `.qsb` files.
+`tools/preview.py` needs PySide6 (Fedora: `python3-pyside6`).
+
+| Command | Does |
+|---|---|
+| `make` | recompile shaders after editing them (needs `qsb`; Fedora: `qt6-qtshadertools`) |
+| `make install` | install or upgrade both add-ons and re-add the tray icon |
+| `make restart` | restart plasmashell, needed to load an upgraded version |
+| `make apply` | set as wallpaper on every screen |
+| `make tray` | put the widget back in the system tray |
+| `make uninstall` | remove both add-ons |
+
+Adding a pattern: write a `fieldSomething(vec2 px)` function in `field.vert`
+that returns `vec4(colour, density)`, add it to `field()`, and add its name to
+`patternNames` in `AsciiScene.qml` and to the two pattern lists in
+`config.qml` and the widget.
 
 ## License
 

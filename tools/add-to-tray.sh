@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Put the ASCII Drift widget in the system tray (always visible).
+# Put the Glyphtide widget in the system tray (always visible).
 # Upgrading the widget with kpackagetool removes it from the tray, so
 # `make install` runs this again afterwards.
 set -euo pipefail
-id="${1:-io.github.borislisandro.asciidrift.widget}"
+id="${1:-io.github.borislisandro.glyphtide.widget}"
 qdbus=$(command -v qdbus6 || command -v qdbus-qt6 || command -v qdbus)
 "$qdbus" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
 var out = '';

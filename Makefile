@@ -1,4 +1,4 @@
-ID      := io.github.borislisandro.asciidrift
+ID      := io.github.borislisandro.glyphtide
 PKG     := package
 SHADERS := $(PKG)/contents/shaders
 QSB     := $(shell command -v qsb-qt6 || command -v qsb || echo /usr/lib64/qt6/bin/qsb)
