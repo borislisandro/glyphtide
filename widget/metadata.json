@@ -1,0 +1,20 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "borislisandro"
+            }
+        ],
+        "Category": "Appearance",
+        "Description": "Quick controls for the ASCII Drift wallpaper",
+        "Icon": "preferences-desktop-wallpaper",
+        "Id": "io.github.borislisandro.asciidrift.widget",
+        "License": "MIT",
+        "Name": "ASCII Drift",
+        "Version": "1.0.0",
+        "Website": "https://github.com/borislisandro/ascii-drift"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-NotificationAreaCategory": "ApplicationStatus"
+}

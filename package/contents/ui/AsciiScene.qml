@@ -23,6 +23,11 @@ Item {
     property color colorD: "#7a0420"
     property real glow: 0.12
 
+    // Pattern: -1 cycles through all of them, otherwise an index into patternNames
+    readonly property var patternNames: ["Drift", "Dunes", "Ripples", "Aurora"]
+    property int pattern: -1
+    property int cycleMinutes: 10
+
     // Motion
     property real speed: 1.0
     property real zoom: 1.0
@@ -41,6 +46,61 @@ Item {
         id: metrics
         font.family: scene.fontFamily
         font.pixelSize: scene.fontPixelSize
+    }
+
+    // ---- pattern switching -------------------------------------------------
+    // The shader always knows two patterns and a mix factor; switching is a
+    // slow morph from one to the other.
+    property int _shown: 0
+    property int _target: 0
+    property real _mix: 0
+
+    function wrap(n) {
+        const c = patternNames.length;
+        return ((n % c) + c) % c;
+    }
+
+    function slot() {
+        // which pattern the cycle is on right now: derived from the wall clock,
+        // so every monitor agrees and each session starts somewhere different
+        return wrap(Math.floor(Date.now() / (Math.max(1, cycleMinutes) * 60000)));
+    }
+
+    function show(n) {
+        n = wrap(n);
+        if (morph.running) {
+            morph.stop();
+            _shown = _target;
+            _mix = 0;
+        }
+        if (n === _shown)
+            return;
+        _target = n;
+        morph.start();
+    }
+
+    Component.onCompleted: _shown = _target = (pattern >= 0 ? wrap(pattern) : slot())
+    onPatternChanged: show(pattern >= 0 ? pattern : slot())
+
+    NumberAnimation {
+        id: morph
+        target: scene
+        property: "_mix"
+        from: 0
+        to: 1
+        duration: 6000
+        easing.type: Easing.InOutSine
+        onFinished: {
+            scene._shown = scene._target;
+            scene._mix = 0;
+        }
+    }
+
+    Timer {
+        interval: 5000
+        repeat: true
+        running: scene.pattern < 0 && scene.running
+        onTriggered: scene.show(scene.slot())
     }
 
     // ---- clock -----------------------------------------------------------
@@ -120,6 +180,9 @@ Item {
         property real glyphCount: scene.glyphList.length
         property real glow: scene.glow
         property real fade: 0
+        property real patternA: scene._shown
+        property real patternB: scene._target
+        property real patternMix: scene._mix
         property size resolution: Qt.size(width, height)
         property size cell: Qt.size(scene.cellW, scene.cellH)
         property color background: scene.backgroundColor

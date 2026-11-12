@@ -6,6 +6,14 @@
   <kcfgfile name=""/>
 
   <group name="General">
+    <entry name="Pattern" type="Int">
+      <label>-1 cycles through all patterns, otherwise 0 Drift, 1 Dunes, 2 Ripples, 3 Aurora</label>
+      <default>-1</default>
+    </entry>
+    <entry name="CycleMinutes" type="Int">
+      <label>Minutes each pattern stays when cycling</label>
+      <default>10</default>
+    </entry>
     <entry name="Glyphs" type="String">
       <label>Glyph ramp, from emptiest to densest</label>
       <default> .:-=+*#%@</default>

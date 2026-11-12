@@ -19,6 +19,8 @@ WallpaperItem {
     AsciiScene {
         anchors.fill: parent
 
+        pattern: root.cfg.Pattern
+        cycleMinutes: root.cfg.CycleMinutes
         glyphs: root.cfg.Glyphs
         fontFamily: root.cfg.FontFamily
         fontPixelSize: Math.max(6, root.cfg.FontSize)

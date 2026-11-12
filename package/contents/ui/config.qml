@@ -9,6 +9,8 @@ Kirigami.FormLayout {
     twinFormLayouts: parentLayout
     property alias formLayout: root
 
+    property int cfg_Pattern: -1
+    property alias cfg_CycleMinutes: cycleMinutes.value
     property alias cfg_Glyphs: glyphs.text
     property alias cfg_FontFamily: fontFamily.text
     property alias cfg_FontSize: fontSize.value
@@ -22,6 +24,21 @@ Kirigami.FormLayout {
     property alias cfg_ColorB: colorB.color
     property alias cfg_ColorC: colorC.color
     property alias cfg_ColorD: colorD.color
+
+    QQC2.ComboBox {
+        Kirigami.FormData.label: "Pattern:"
+        model: ["Cycle through all", "Drift", "Dunes", "Ripples", "Aurora"]
+        currentIndex: root.cfg_Pattern + 1
+        onActivated: root.cfg_Pattern = currentIndex - 1
+    }
+    QQC2.SpinBox {
+        id: cycleMinutes
+        Kirigami.FormData.label: "Change every (min):"
+        from: 1; to: 720
+        enabled: root.cfg_Pattern < 0
+    }
+
+    Item { Kirigami.FormData.isSection: true }
 
     QQC2.TextField {
         id: glyphs

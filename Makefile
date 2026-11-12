@@ -4,7 +4,7 @@ SHADERS := $(PKG)/contents/shaders
 QSB     := $(shell command -v qsb-qt6 || command -v qsb || echo /usr/lib64/qt6/bin/qsb)
 QSBS    := $(SHADERS)/field.vert.qsb $(SHADERS)/glyph.frag.qsb
 
-.PHONY: all shaders install uninstall apply restart preview clean
+.PHONY: all shaders install uninstall apply tray restart preview clean
 
 all: shaders
 
@@ -19,19 +19,31 @@ shaders: $(QSBS)
 %.vert.qsb: %.vert
 	$(QSB) -b --glsl "300 es,150" --hlsl 50 --msl 12 -o $@ $<
 
-install: shaders
-	@if kpackagetool6 -t Plasma/Wallpaper -s $(ID) >/dev/null 2>&1; then \
-		kpackagetool6 -t Plasma/Wallpaper -u $(PKG); \
+# install-or-upgrade a package: $(call kpkg,<type>,<id>,<dir>)
+define kpkg
+	@if kpackagetool6 -t $(1) -s $(2) >/dev/null 2>&1; then \
+		kpackagetool6 -t $(1) -u $(3); \
 	else \
-		kpackagetool6 -t Plasma/Wallpaper -i $(PKG); \
+		kpackagetool6 -t $(1) -i $(3); \
 	fi
+endef
+
+install: shaders
+	$(call kpkg,Plasma/Wallpaper,$(ID),$(PKG))
+	$(call kpkg,Plasma/Applet,$(ID).widget,widget)
+	@sleep 1; ./tools/add-to-tray.sh $(ID).widget
 
 uninstall:
-	kpackagetool6 -t Plasma/Wallpaper -r $(ID)
+	-kpackagetool6 -t Plasma/Wallpaper -r $(ID)
+	-kpackagetool6 -t Plasma/Applet -r $(ID).widget
 
 # Set it as the wallpaper on every screen.
 apply:
 	./tools/apply.sh $(ID)
+
+# Show the settings widget in the system tray.
+tray:
+	./tools/add-to-tray.sh $(ID).widget
 
 # plasmashell caches QML: restart it to pick up a reinstalled version.
 restart:

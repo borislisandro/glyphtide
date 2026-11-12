@@ -1,18 +1,28 @@
 # ascii-drift
 
-An animated ASCII wallpaper for KDE Plasma 6: translucent crimson, orange and
-magenta sheets drifting slowly over black, drawn entirely in monospace glyphs.
+An animated ASCII wallpaper for KDE Plasma 6, drawn entirely in monospace
+glyphs in a crimson / orange / magenta palette on black. Four patterns, which
+it can cycle through by slowly morphing one into the next:
 
-![preview](docs/preview.png)
+| | |
+|---|---|
+| **Drift** — translucent sheets sliding over each other | **Dunes** — layered ridgelines rolling sideways |
+| **Ripples** — rings spreading from wandering sources | **Aurora** — hanging curtains of light that sway |
 
-It is a native Plasma wallpaper plugin, so it shows up in *Desktop and
-Wallpaper* settings, keeps desktop icons and widgets working, and runs
-independently on each monitor.
+![patterns](docs/patterns.png)
+
+It is not a separate program. It comes as two small Plasma add-ons that the
+desktop shell itself loads:
+
+- a **wallpaper plugin** — shows up in *Desktop and Wallpaper* settings, keeps
+  desktop icons and widgets working, and runs independently on each monitor;
+- a **system tray widget** (the `#` icon) — a quick settings panel for the
+  wallpaper: pattern, cycle interval, speed, glyph size, shape size, pausing.
 
 ## Install
 
 ```sh
-make install   # install (or upgrade) into ~/.local/share/plasma/wallpapers
+make install   # install (or upgrade) the wallpaper and the tray widget
 make apply     # set it as the wallpaper on every screen
 ```
 
@@ -27,8 +37,13 @@ plasmashell) to load the new code.
 
 ## Settings
 
+The tray widget covers the everyday ones; everything is in *Right click
+desktop → Desktop and Wallpaper*.
+
 | Setting | Default | |
 |---|---|---|
+| Pattern | cycle | or pin Drift, Dunes, Ripples or Aurora |
+| Change every | 10 min | how long each pattern stays when cycling |
 | Glyphs | `` .:-=+*#%@`` | the ramp, from emptiest to densest |
 | Font / glyph size | JetBrains Mono, 16 px | smaller = finer grid |
 | Speed | 100 % | 0 freezes it |
@@ -82,9 +97,13 @@ package/                     the Plasma wallpaper package
   contents/ui/AsciiScene.qml   the animation (pure QtQuick)
   contents/ui/main.qml         Plasma wrapper + pause logic
   contents/ui/config.qml       settings page
+widget/                      the system tray widget
+  contents/ui/main.qml         the popup
+  contents/tools/ctl.sh        reads/writes the wallpaper settings via Plasma scripting
   contents/shaders/            shader sources (+ compiled .qsb)
 tools/preview.py             run the scene in a window (needs PySide6)
 tools/apply.sh               set as wallpaper on all screens
+tools/add-to-tray.sh         put the widget in the system tray
 ```
 
 ## Hacking
@@ -93,6 +112,7 @@ tools/apply.sh               set as wallpaper on all screens
 make preview                                   # live window
 tools/preview.py --size 1080x1920 --seed 2.5   # portrait, other part of the field
 tools/preview.py --shot out.png --time 40      # render one frame
+tools/preview.py --set pattern=3                # 0 Drift, 1 Dunes, 2 Ripples, 3 Aurora
 ```
 
 Editing a shader needs `qsb` (Fedora: `qt6-qtshadertools`); `make` rebuilds

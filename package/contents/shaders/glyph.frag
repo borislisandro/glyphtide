@@ -21,6 +21,9 @@ layout(std140, binding = 0) uniform buf {
     float glyphCount;
     float glow;
     float fade;
+    float patternA;   // pattern being shown
+    float patternB;   // pattern being morphed to
+    float patternMix; // 0 = all A, 1 = all B
     vec2 resolution; // size of the glyph grid in px (cols * cell.x, rows * cell.y)
     vec2 cell;       // cell size in px
     vec4 background;
