@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "borislisandro"
+            }
+        ],
+        "Description": "Slow-drifting translucent sheets rendered as animated ASCII, on the GPU",
+        "Icon": "preferences-desktop-wallpaper",
+        "Id": "io.github.borislisandro.asciidrift",
+        "License": "MIT",
+        "Name": "ASCII Drift",
+        "Version": "1.0.0",
+        "Website": "https://github.com/borislisandro/ascii-drift"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

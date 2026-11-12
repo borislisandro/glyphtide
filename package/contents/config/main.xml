@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile name=""/>
+
+  <group name="General">
+    <entry name="Glyphs" type="String">
+      <label>Glyph ramp, from emptiest to densest</label>
+      <default> .:-=+*#%@</default>
+    </entry>
+    <entry name="FontFamily" type="String">
+      <default>JetBrains Mono</default>
+    </entry>
+    <entry name="FontSize" type="Int">
+      <label>Glyph size in pixels</label>
+      <default>16</default>
+    </entry>
+    <entry name="Speed" type="Int">
+      <label>Animation speed, percent</label>
+      <default>100</default>
+    </entry>
+    <entry name="Zoom" type="Int">
+      <label>Size of the shapes, percent</label>
+      <default>100</default>
+    </entry>
+    <entry name="Glow" type="Int">
+      <label>Background glow behind the glyphs, percent</label>
+      <default>12</default>
+    </entry>
+    <entry name="Fps" type="Int">
+      <label>Frame rate cap, 0 follows the display</label>
+      <default>60</default>
+    </entry>
+    <entry name="PauseWhenCovered" type="Bool">
+      <label>Pause while a maximized or fullscreen window covers the screen</label>
+      <default>true</default>
+    </entry>
+    <entry name="BackgroundColor" type="Color">
+      <default>#0b0809</default>
+    </entry>
+    <entry name="ColorA" type="Color">
+      <default>#e3253d</default>
+    </entry>
+    <entry name="ColorB" type="Color">
+      <default>#ff7a1a</default>
+    </entry>
+    <entry name="ColorC" type="Color">
+      <default>#e52161</default>
+    </entry>
+    <entry name="ColorD" type="Color">
+      <default>#7a0420</default>
+    </entry>
+  </group>
+</kcfg>
