@@ -34,30 +34,55 @@ plasmashell) to load the new code.
 | Speed | 100 % | 0 freezes it |
 | Shape size | 100 % | |
 | Glow | 12 % | soft colour behind the glyphs |
-| Frame rate cap | 60 | 0 follows the display refresh rate |
-| Pause when covered | on | stops animating under a maximized/fullscreen window |
+| Frame rate cap | 0 | 0 follows the display refresh rate; a cap skips whole frames |
+| Pause when covered | on | stops animating under a maximized/fullscreen window, resumes the moment it moves |
 | Colours | CrimsonDark palette | background + four sheet colours |
 
 ## How it works
 
-Two fragment shaders, so the cost is close to nothing:
+One draw call, and only its uniforms change from frame to frame:
 
-1. `field.frag` runs at **one pixel per character cell** (about 250 × 70 on a
-   1440p screen). It layers four domain-warped noise "sheets" and outputs a
-   colour and a density per cell. The distance to each sheet's outline is
-   estimated from the noise gradient, which gives a dense rim of constant
-   width, a stippled interior and fading contour lines.
-2. `glyph.frag` runs at full resolution and only does lookups: cell → field
-   texture → glyph from an atlas that QML renders once from the chosen font.
-   Adjacent glyphs in the ramp are cross-faded so density changes morph
-   instead of popping.
+1. `field.vert` — the mesh has one vertex per character-cell corner (about
+   250 × 70 on a 1440p screen), and the vertex shader computes the field
+   there: four domain-warped noise "sheets", each with a dense rim of constant
+   on-screen width, a stippled interior and fading contour lines. So the
+   expensive maths runs a few thousand times per frame, not millions.
+2. `glyph.frag` — each pixel extrapolates the interpolated field to the centre
+   of its own cell, so the whole cell agrees on one colour and density, then
+   draws the matching glyph from an atlas that QML renders once from the
+   chosen font. Adjacent glyphs in the ramp are cross-faded so density changes
+   morph instead of popping.
+
+The animation clock follows the display's frame clock, so it runs at the
+monitor's refresh rate with even pacing.
+
+## Cost
+
+Measured on a 12-thread desktop with an RTX 2060 Super, two monitors
+(2560×1440 @ 180 Hz and 1080×1920 @ 165 Hz) both animating at display rate,
+against the same session with a static image wallpaper. Readings are noisy
+because the rest of the desktop was in use.
+
+| | static image | ascii-drift |
+|---|---|---|
+| plasmashell CPU (share of one core) | 8–11 % | 12–16 % |
+| GPU load (whole system) | 28–29 % | 31–32 % |
+| plasmashell video memory | 119–123 MiB | 104–108 MiB |
+| plasmashell RAM growth | ~1.5 MiB/min | ~2.2 MiB/min |
+
+While a maximized or fullscreen window covers a screen the animation is
+paused and costs nothing.
+
+An earlier two-pass design (field rendered to a small texture every frame)
+made plasmashell grow by 4–5 MiB/min on this NVIDIA/Wayland setup; the
+single-pass design exists to avoid that.
 
 ```
 package/                     the Plasma wallpaper package
   contents/ui/AsciiScene.qml   the animation (pure QtQuick)
   contents/ui/main.qml         Plasma wrapper + pause logic
   contents/ui/config.qml       settings page
-  contents/shaders/*.frag      shader sources (+ compiled .qsb)
+  contents/shaders/            shader sources (+ compiled .qsb)
 tools/preview.py             run the scene in a window (needs PySide6)
 tools/apply.sh               set as wallpaper on all screens
 ```
@@ -70,7 +95,7 @@ tools/preview.py --size 1080x1920 --seed 2.5   # portrait, other part of the fie
 tools/preview.py --shot out.png --time 40      # render one frame
 ```
 
-Editing a `.frag` needs `qsb` (Fedora: `qt6-qtshadertools`); `make` rebuilds
+Editing a shader needs `qsb` (Fedora: `qt6-qtshadertools`); `make` rebuilds
 the `.qsb` files.
 
 ## License

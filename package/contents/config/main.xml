@@ -31,7 +31,7 @@
     </entry>
     <entry name="Fps" type="Int">
       <label>Frame rate cap, 0 follows the display</label>
-      <default>60</default>
+      <default>0</default>
     </entry>
     <entry name="PauseWhenCovered" type="Bool">
       <label>Pause while a maximized or fullscreen window covers the screen</label>

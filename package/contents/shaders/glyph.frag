@@ -1,28 +1,36 @@
 #version 440
 
-// Pass 2 — the glyphs.
-// For every screen pixel: find its character cell, look up that cell's
-// colour/density in the field texture, and draw the matching glyph from
-// the atlas. Neighbouring glyphs in the ramp are cross-faded over a short
-// window so density changes morph instead of popping.
+// The glyphs.
+// The field arrives interpolated from the cell corners. Each pixel first
+// extrapolates it to the centre of its own character cell (exact, because the
+// interpolation is linear and the centre lies on the diagonal shared by the
+// cell's two triangles), so every pixel of a cell agrees on one colour and
+// one density. It then draws the matching glyph from the atlas, cross-fading
+// neighbouring glyphs of the ramp so density changes morph instead of popping.
 
 layout(location = 0) in vec2 qt_TexCoord0;
+layout(location = 1) in vec4 fieldValue;
 layout(location = 0) out vec4 fragColor;
 
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
-    vec2 resolution; // item size in px
-    vec2 grid;       // cols, rows
-    vec2 cell;       // cell size in px
+    float time;
+    float zoom;
+    float seed;
     float glyphCount;
     float glow;
     float fade;
+    vec2 resolution; // size of the glyph grid in px (cols * cell.x, rows * cell.y)
+    vec2 cell;       // cell size in px
     vec4 background;
+    vec4 colorA;     // primary  (crimson)
+    vec4 colorB;     // warm     (orange)
+    vec4 colorC;     // accent   (magenta)
+    vec4 colorD;     // deep     (dark red)
 };
 
-layout(binding = 1) uniform sampler2D field;
-layout(binding = 2) uniform sampler2D atlas;
+layout(binding = 1) uniform sampler2D atlas;
 
 float glyph(float index, vec2 f)
 {
@@ -37,13 +45,17 @@ void main()
     vec2 id = floor(px / cell);
     vec2 f = fract(px / cell);
 
-    vec4 fld = texture(field, (id + 0.5) / grid);
-    float v = clamp(fld.a, 0.0, 1.0) * fade;
+    vec2 toCentre = (id + 0.5) * cell - px;
+    vec4 fld = fieldValue
+             + dFdx(fieldValue) * (toCentre.x / dFdx(px.x))
+             + dFdy(fieldValue) * (toCentre.y / dFdy(px.y));
+    fld = clamp(fld, 0.0, 1.0);
 
+    float v = fld.a * fade;
     float g = v * (glyphCount - 1.0);
     float i0 = floor(g);
     float i1 = min(i0 + 1.0, glyphCount - 1.0);
-    float cov = mix(glyph(i0, f), glyph(i1, f), smoothstep(0.3, 0.7, g - i0));
+    float cov = mix(glyph(i0, f), glyph(i1, f), smoothstep(0.0, 1.0, g - i0));
 
     vec3 ink = fld.rgb * (0.55 + 0.45 * v);
     vec3 base = background.rgb + fld.rgb * (v * glow);

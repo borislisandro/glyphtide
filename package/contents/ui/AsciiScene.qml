@@ -2,10 +2,10 @@
     ascii-drift — the animation itself. Pure QtQuick, no Plasma imports, so the
     same file runs inside the wallpaper and inside tools/preview.py.
 
-    Pipeline:
-      field  (ShaderEffect, cols x rows px)  -> colour + density per character cell
-      atlas  (Text items rendered once)      -> one texture holding the glyph ramp
-      glyphs (ShaderEffect, full size)       -> picks a glyph per cell from the atlas
+    One ShaderEffect draws everything:
+      vertex shader    -> colour + density of the field, once per cell corner
+      fragment shader  -> picks a glyph per cell from the atlas
+      atlas            -> the glyph ramp, rendered to a texture once
 */
 import QtQuick
 
@@ -26,7 +26,7 @@ Item {
     // Motion
     property real speed: 1.0
     property real zoom: 1.0
-    property int fps: 60          // 0 = follow the display refresh rate
+    property int fps: 0           // 0 = follow the display refresh rate
     property bool running: true
     property real seed: 0         // different value per screen -> different shapes
     property real time: 0         // animation clock; set it yourself when running is false
@@ -47,7 +47,6 @@ Item {
     // The clock ping-pongs over an hour so the float sent to the GPU stays
     // small and precise no matter how many days the session has been up.
     property real _clock: 0
-    property real _last: 0
     readonly property real _period: 3600
 
     function advance(dt) {
@@ -56,51 +55,20 @@ Item {
         time = phase < _period ? phase : 2 * _period - phase;
     }
 
-    Timer {
-        interval: Math.max(4, Math.round(1000 / Math.max(1, scene.fps)))
-        repeat: true
-        running: scene.running && scene.fps > 0 && scene.visible
-        onRunningChanged: scene._last = Date.now()
-        onTriggered: {
-            const now = Date.now();
-            scene.advance((now - scene._last) / 1000);
-            scene._last = now;
-        }
-    }
-
+    // Driven by the display's own frame clock, so every update lands exactly
+    // on a vsync. With a cap, whole frames are skipped (180 Hz capped at 60
+    // -> every 3rd frame), which keeps the pacing perfectly even.
     FrameAnimation {
-        running: scene.running && scene.fps <= 0 && scene.visible
-        onTriggered: scene.advance(frameTime)
-    }
-
-    // ---- pass 1: field, one pixel per cell --------------------------------
-    ShaderEffect {
-        id: field
-        width: scene.cols
-        height: scene.rows
-        blending: false
-
-        property real time: scene.time
-        property real zoom: Math.max(0.05, scene.zoom)
-        property real seed: scene.seed
-        property size grid: Qt.size(scene.cols, scene.rows)
-        property size cell: Qt.size(scene.cellW, scene.cellH)
-        property color colorA: scene.colorA
-        property color colorB: scene.colorB
-        property color colorC: scene.colorC
-        property color colorD: scene.colorD
-
-        fragmentShader: Qt.resolvedUrl("../shaders/field.frag.qsb")
-    }
-
-    ShaderEffectSource {
-        id: fieldTexture
-        sourceItem: field
-        hideSource: true
-        live: true
-        smooth: false
-        format: ShaderEffectSource.RGBA16F
-        textureSize: Qt.size(scene.cols, scene.rows)
+        property real pending: 0
+        running: scene.running && scene.visible
+        onRunningChanged: pending = 0
+        onTriggered: {
+            pending += frameTime;
+            if (scene.fps <= 0 || pending + 0.0006 >= 1 / scene.fps) {
+                scene.advance(pending);
+                pending = 0;
+            }
+        }
     }
 
     // ---- glyph atlas: the ramp, one glyph per cell, rendered once ----------
@@ -131,26 +99,36 @@ Item {
         id: atlasTexture
         sourceItem: atlas
         hideSource: true
-        live: true   // re-renders only when the glyphs/font actually change
+        live: true   // re-renders only when the glyphs/font actually change, not per frame
         smooth: true
     }
 
-    // ---- pass 2: glyphs -----------------------------------------------------
+    // ---- the one draw call ------------------------------------------------
+    // Only uniforms change from frame to frame: no intermediate render target,
+    // no geometry re-upload.
     ShaderEffect {
         id: glyphPass
-        anchors.fill: parent
+        width: scene.cols * scene.cellW
+        height: scene.rows * scene.cellH
         blending: false
+        mesh: GridMesh { resolution: Qt.size(scene.cols, scene.rows) }
 
-        property var field: fieldTexture
         property var atlas: atlasTexture
-        property size resolution: Qt.size(width, height)
-        property size grid: Qt.size(scene.cols, scene.rows)
-        property size cell: Qt.size(scene.cellW, scene.cellH)
+        property real time: scene.time
+        property real zoom: Math.max(0.05, scene.zoom)
+        property real seed: scene.seed
         property real glyphCount: scene.glyphList.length
         property real glow: scene.glow
         property real fade: 0
+        property size resolution: Qt.size(width, height)
+        property size cell: Qt.size(scene.cellW, scene.cellH)
         property color background: scene.backgroundColor
+        property color colorA: scene.colorA
+        property color colorB: scene.colorB
+        property color colorC: scene.colorC
+        property color colorD: scene.colorD
 
+        vertexShader: Qt.resolvedUrl("../shaders/field.vert.qsb")
         fragmentShader: Qt.resolvedUrl("../shaders/glyph.frag.qsb")
 
         NumberAnimation on fade {

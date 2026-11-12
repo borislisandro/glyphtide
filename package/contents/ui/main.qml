@@ -53,25 +53,56 @@ WallpaperItem {
         filterByActivity: true
         filterMinimized: true
 
-        onCountChanged: coverCheck.restart()
-        onDataChanged: coverCheck.restart()
-        onModelReset: coverCheck.restart()
-        onVirtualDesktopChanged: coverCheck.restart()
-        onScreenGeometryChanged: coverCheck.restart()
+        // start(), not restart(): a window being dragged emits changes
+        // continuously and must not keep postponing the check.
+        onCountChanged: coverCheck.start()
+        onDataChanged: coverCheck.start()
+        onModelReset: coverCheck.start()
+        onVirtualDesktopChanged: coverCheck.start()
+        onActivityChanged: coverCheck.start()
+        onScreenGeometryChanged: coverCheck.start()
+    }
+
+    // A window only hides the desktop if it is maximized/fullscreen AND its
+    // frame really spans the screen (a maximized window that is being dragged
+    // by its title bar no longer does).
+    function desktopHidden() {
+        const sw = Screen.width, sh = Screen.height;
+        for (let i = 0; i < tasks.count; ++i) {
+            const idx = tasks.index(i, 0);
+            const big = tasks.data(idx, TaskManager.AbstractTasksModel.IsMaximized) === true
+                     || tasks.data(idx, TaskManager.AbstractTasksModel.IsFullScreen) === true;
+            if (!big)
+                continue;
+            const g = tasks.data(idx, TaskManager.AbstractTasksModel.Geometry);
+            if (!g || g.width <= 0)
+                return true;
+            const dx = Math.abs(g.x - Screen.virtualX), dy = g.y - Screen.virtualY;
+            if (dx <= 8 && dy >= 0 && dy <= sh * 0.15 && g.width >= sw - 16 && g.height >= sh * 0.8)
+                return true;
+        }
+        return false;
+    }
+
+    // Resume instantly, pause only after the desktop has stayed hidden a moment.
+    Timer {
+        id: coverCheck
+        interval: 40
+        running: true
+        onTriggered: {
+            if (root.desktopHidden()) {
+                if (!root.covered)
+                    pauseDelay.start();
+            } else {
+                pauseDelay.stop();
+                root.covered = false;
+            }
+        }
     }
 
     Timer {
-        id: coverCheck
-        interval: 150
-        running: true
-        onTriggered: {
-            let hidden = false;
-            for (let i = 0; i < tasks.count && !hidden; ++i) {
-                const idx = tasks.index(i, 0);
-                hidden = tasks.data(idx, TaskManager.AbstractTasksModel.IsMaximized) === true
-                      || tasks.data(idx, TaskManager.AbstractTasksModel.IsFullScreen) === true;
-            }
-            root.covered = hidden;
-        }
+        id: pauseDelay
+        interval: 700
+        onTriggered: root.covered = root.desktopHidden()
     }
 }
