@@ -3,7 +3,7 @@
 An animated ASCII wallpaper for KDE Plasma 6: slow, flowing shapes drawn
 entirely out of text characters.
 
-![Glyphtide, Drift pattern](docs/preview.png)
+![Glyphtide, Drift pattern](docs/drift.gif)
 
 It has four patterns and can cycle through them, morphing from one to the next:
 
