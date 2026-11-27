@@ -36,7 +36,16 @@ WallpaperItem {
 
         // each monitor shows a different part of the field
         seed: (Screen.virtualX * 7 + Screen.virtualY * 13) / 1000
-        running: !(root.cfg.PauseWhenCovered && root.covered)
+        running: !(root.cfg.PauseWhenCovered && root.covered && !root.switching)
+    }
+
+    // Alt-Tab (or Meta-Tab) can reveal the desktop from behind a fullscreen
+    // window without that window changing state, so keep animating while
+    // the modifier is held.
+    readonly property bool switching: switcherKeys.item ? switcherKeys.item.held : false
+    Loader {
+        id: switcherKeys
+        source: "SwitcherKeys.qml"
     }
 
     // ---- pause when the desktop is not visible anyway ----------------------
